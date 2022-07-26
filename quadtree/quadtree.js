@@ -40,6 +40,15 @@ class Rectangle {
 
     }
 
+    liesInside(range) {
+        // check if a given boundary lies inside a given range
+        // both are rectangles
+        return (this.x >= range.x &&
+            this.x + this.w <= range.x + range.w &&
+            this.y >= range.y &&
+            this.y + this.h <= range.y + range.h);
+    }
+
 }
 
 class Quadtree {
@@ -47,7 +56,7 @@ class Quadtree {
         this.boundary = boundary;
         this.capacity = capacity;
         this.points = [];
-        this.divided = false;
+        this.divided = false; //probably not needed
     }
 
     subdivide() {
@@ -101,20 +110,24 @@ class Quadtree {
         );
     }
 
-    query(range, found = [], unsearched_quadrants = [], searched_quadrants = []) {
+    query(range, found = [], searched_quadrants = []) {
+
+        // TODO: if boundary lies compleltely inside the range, 
+        // return all points without checking (only traversing to leaf nodes required)
+
+
         if (!this.boundary.intersects(range)) {
-            unsearched_quadrants.push(this.boundary);
-            return [found, unsearched_quadrants, searched_quadrants];
+            return [found, searched_quadrants];
         } else {
             // searched_quadrants.push(this.boundary);
         }
 
         if (this.divided) {
-            this.northwest.query(range, found, unsearched_quadrants, searched_quadrants);
-            this.northeast.query(range, found, unsearched_quadrants, searched_quadrants);
-            this.southwest.query(range, found, unsearched_quadrants, searched_quadrants);
-            this.southeast.query(range, found, unsearched_quadrants, searched_quadrants);
-            return [found, unsearched_quadrants, searched_quadrants];
+            this.northwest.query(range, found, searched_quadrants);
+            this.northeast.query(range, found, searched_quadrants);
+            this.southwest.query(range, found, searched_quadrants);
+            this.southeast.query(range, found, searched_quadrants);
+            return [found, searched_quadrants];
         }
         else {
             searched_quadrants.push(this.boundary);
@@ -125,7 +138,7 @@ class Quadtree {
                 } 
             }
         }
-        return [found, unsearched_quadrants, searched_quadrants];
+        return [found, searched_quadrants];
     }
 
     // method to draw quadtree for p5.js
